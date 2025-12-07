@@ -15,6 +15,9 @@ from datetime import datetime
 import logging
 import json
 from typing import Dict, List, Tuple, Optional
+import optuna
+from optuna.pruners import MedianPruner
+from optuna.samplers import TPESampler
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -221,6 +224,124 @@ def fetch_all_historical_data(symbol: str) -> List[pd.DataFrame]:
     return datasets
 
 
+def optuna_hyperparameter_tuning(
+    strategy_class,
+    symbol: str,
+    train_data: pd.DataFrame,
+    val_data: pd.DataFrame,
+    target_win_rate: float = 90.0,
+    n_trials: int = 20,
+    pretrained_weights: Optional[str] = None
+) -> Tuple[dict, float, PPOAgent]:
+    """
+    Fast hyperparameter tuning using Optuna Bayesian optimization with early stopping.
+    ~10x faster than grid search (20 trials vs 64 combos).
+    """
+    import torch
+    logger.info(f"🚀 Optuna optimization for {strategy_class.__name__} on {symbol}")
+    logger.info(f"Running {n_trials} trials with early stopping (vs 64 grid combos)")
+    
+    model_key = f"{strategy_class.__name__}_{symbol}"
+    best_agent = None
+    best_config = None
+    best_win_rate = 0
+    
+    def objective(trial: optuna.Trial):
+        nonlocal best_agent, best_win_rate, best_config
+        
+        # Suggest hyperparameters (Optuna samples intelligently)
+        lr = trial.suggest_float('lr', 0.0001, 0.001, log=True)
+        episodes = trial.suggest_int('episodes', 1500, 5000, step=500)
+        win_bonus = trial.suggest_float('win_bonus', 5.0, 20.0)
+        loss_penalty = trial.suggest_float('loss_penalty', -3.0, -1.0)
+        hold_penalty = trial.suggest_float('hold_penalty', -0.04, -0.01)
+        
+        reward_config = {
+            'win_bonus': win_bonus,
+            'loss_penalty': loss_penalty,
+            'hold_penalty': hold_penalty
+        }
+        
+        logger.info(f"\n[Trial {trial.number + 1}/{n_trials}] LR={lr:.5f}, Episodes={episodes}")
+        
+        # Initialize environment
+        strategy = strategy_class()
+        env = TradingEnvironment(df=train_data, initial_balance=10000)
+        
+        # Initialize agent
+        agent = PPOAgent(
+            state_size=24,
+            action_size=4,
+            lr=lr,
+            gamma=0.99,
+            clip_epsilon=0.2
+        )
+        
+        # Transfer learning: Load pretrained weights if available
+        if pretrained_weights and Path(pretrained_weights).exists():
+            logger.info(f"  🔄 Loading pretrained weights from {pretrained_weights}")
+            agent.policy.load_state_dict(torch.load(pretrained_weights))
+        
+        # Train with early stopping
+        checkpoint_interval = 500  # Check every 500 episodes
+        total_episodes = episodes
+        
+        for ep in range(0, total_episodes, checkpoint_interval):
+            batch_episodes = min(checkpoint_interval, total_episodes - ep)
+            
+            # Train batch
+            agent.train(env, episodes=batch_episodes, verbose=False)
+            
+            # Early stopping: Check performance
+            win_rate = (env.winning_trades / env.total_trades * 100) if env.total_trades > 0 else 0
+            
+            # Prune if performing poorly
+            trial.report(win_rate, ep + batch_episodes)
+            if trial.should_prune():
+                logger.info(f"  ✂️ Pruned at episode {ep + batch_episodes}: {win_rate:.1f}%")
+                raise optuna.TrialPruned()
+            
+            # Early exit if target reached
+            if win_rate >= target_win_rate:
+                logger.info(f"  🎯 Target reached at episode {ep + batch_episodes}: {win_rate:.1f}%")
+                break
+        
+        # Final evaluation
+        win_rate = (env.winning_trades / env.total_trades * 100) if env.total_trades > 0 else 0
+        logger.info(f"  Result: {win_rate:.1f}% win rate ({env.winning_trades}/{env.total_trades} trades)")
+        
+        # Track best
+        if win_rate > best_win_rate:
+            best_win_rate = win_rate
+            best_agent = agent
+            best_config = {
+                'learning_rate': lr,
+                'reward_config': reward_config,
+                'episodes': episodes
+            }
+            logger.info(f"  🌟 New best: {win_rate:.1f}%")
+        
+        return win_rate
+    
+    # Create Optuna study with pruning
+    study = optuna.create_study(
+        direction='maximize',
+        sampler=TPESampler(seed=42),
+        pruner=MedianPruner(n_startup_trials=5, n_warmup_steps=500)
+    )
+    
+    # Optimize
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=False)
+    
+    logger.info(f"\n✅ Optimization complete!")
+    logger.info(f"   Best win rate: {best_win_rate:.1f}%")
+    logger.info(f"   Best config: {best_config}")
+    logger.info(f"   Trials completed: {len(study.trials)}")
+    logger.info(f"   Pruned trials: {len([t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED])}")
+    
+    return best_config, best_win_rate, best_agent
+
+
 def intelligent_hyperparameter_tuning(
     strategy_class,
     symbol: str,
@@ -339,15 +460,26 @@ def intelligent_hyperparameter_tuning(
 def train_intelligent_brain(
     strategy_name: str,
     symbol: str,
-    target_win_rate: float = 90.0
+    target_win_rate: float = 90.0,
+    use_optuna: bool = True,
+    pretrained_model_path: Optional[str] = None
 ) -> bool:
     """
     Train RL brain to target win rate using intelligent tuning.
+    
+    Args:
+        strategy_name: Name of strategy class
+        symbol: Trading symbol
+        target_win_rate: Target win rate percentage
+        use_optuna: Use Optuna for optimization (faster, default True)
+        pretrained_model_path: Path to pretrained model for transfer learning
     """
     logger.info(f"\n{'='*80}")
     logger.info(f"🧠 TRAINING INTELLIGENT BRAIN")
     logger.info(f"Strategy: {strategy_name} | Symbol: {symbol}")
     logger.info(f"Target: {target_win_rate}% win rate")
+    if pretrained_model_path:
+        logger.info(f"🔄 Transfer learning from: {pretrained_model_path}")
     logger.info(f"{'='*80}\n")
     
     # Get strategy class
@@ -380,13 +512,25 @@ def train_intelligent_brain(
     
     logger.info(f"Training: {len(train_df)} candles | Validation: {len(val_df)} candles")
     
-    # Intelligent hyperparameter tuning
-    best_config, train_win_rate, best_agent = intelligent_hyperparameter_tuning(
-        strategy_class=strategy_class,
-        symbol=symbol,
-        train_data=train_df,
-        target_win_rate=target_win_rate
-    )
+    # Choose optimization method
+    if use_optuna:
+        logger.info("🚀 Using Optuna Bayesian Optimization (10-15 trials, ~3-4 hours)")
+        best_config, train_win_rate, best_agent = optuna_hyperparameter_tuning(
+            strategy_class=strategy_class,
+            symbol=symbol,
+            train_data=train_df,
+            target_win_rate=target_win_rate,
+            n_trials=15,
+            pretrained_model_path=pretrained_model_path
+        )
+    else:
+        logger.info("📊 Using Grid Search (64 combos, ~16 hours)")
+        best_config, train_win_rate, best_agent = intelligent_hyperparameter_tuning(
+            strategy_class=strategy_class,
+            symbol=symbol,
+            train_data=train_df,
+            target_win_rate=target_win_rate
+        )
     
     if train_win_rate < 85.0:
         logger.warning(f"⚠️ Training win rate {train_win_rate:.1f}% below 85% - trying extended training...")
@@ -578,36 +722,46 @@ def main():
     print("Self-improvement: Continuous learning from live trades")
     print("="*80 + "\n")
     
-    # Training configuration - FULL COVERAGE
+    # Training configuration - OPTIMIZED WITH TRANSFER LEARNING
+    # Phase 1: Base models (full training)
+    # Phase 2: Transfer learning from base models
     TRAINING_TASKS = [
-        # Gold (GC=F) - All 3 strategies
-        ('EMA30Strategy', 'GC=F', 90.0),
-        ('ICTStrategy', 'GC=F', 90.0),
-        ('VCPStrategy', 'GC=F', 90.0),
+        # Phase 1: Base models - Full Optuna training (~3 hours each)
+        ('EMA30Strategy', 'GC=F', 90.0, None, 'base'),  # Base for all gold strategies
+        ('EMA30Strategy', 'BANKNIFTY', 90.0, None, 'base'),  # Base for BANKNIFTY
+        ('EMA30Strategy', 'AAPL', 90.0, None, 'base'),  # Base for US stocks
         
-        # Bank Nifty - All 3 strategies
-        ('EMA30Strategy', 'BANKNIFTY', 90.0),
-        ('ICTStrategy', 'BANKNIFTY', 90.0),
-        ('VCPStrategy', 'BANKNIFTY', 90.0),
+        # Phase 2: Transfer learning - Fine-tune from base (~1 hour each)
+        ('ICTStrategy', 'GC=F', 90.0, 'models/rl_brain/EMA30Strategy_GC=F_best.pth', 'transfer'),
+        ('VCPStrategy', 'GC=F', 90.0, 'models/rl_brain/EMA30Strategy_GC=F_best.pth', 'transfer'),
         
-        # Apple - All 3 strategies
-        ('EMA30Strategy', 'AAPL', 90.0),
-        ('ICTStrategy', 'AAPL', 90.0),
-        ('VCPStrategy', 'AAPL', 90.0),
+        ('ICTStrategy', 'BANKNIFTY', 90.0, 'models/rl_brain/EMA30Strategy_BANKNIFTY_best.pth', 'transfer'),
+        ('VCPStrategy', 'BANKNIFTY', 90.0, 'models/rl_brain/EMA30Strategy_BANKNIFTY_best.pth', 'transfer'),
         
-        # Microsoft - All 3 strategies
-        ('EMA30Strategy', 'MSFT', 90.0),
-        ('ICTStrategy', 'MSFT', 90.0),
-        ('VCPStrategy', 'MSFT', 90.0),
+        ('ICTStrategy', 'AAPL', 90.0, 'models/rl_brain/EMA30Strategy_AAPL_best.pth', 'transfer'),
+        ('VCPStrategy', 'AAPL', 90.0, 'models/rl_brain/EMA30Strategy_AAPL_best.pth', 'transfer'),
+        
+        ('EMA30Strategy', 'MSFT', 90.0, 'models/rl_brain/EMA30Strategy_AAPL_best.pth', 'transfer'),
+        ('ICTStrategy', 'MSFT', 90.0, 'models/rl_brain/EMA30Strategy_AAPL_best.pth', 'transfer'),
+        ('VCPStrategy', 'MSFT', 90.0, 'models/rl_brain/EMA30Strategy_AAPL_best.pth', 'transfer'),
     ]
-    # Total: 12 models (4 symbols × 3 strategies)
+    # Total: 12 models (3 base + 9 transfer = ~12-15 hours total!)
     
-    print(f"📋 TRAINING QUEUE: {len(TRAINING_TASKS)} models")
+    print(f"📋 OPTIMIZED TRAINING QUEUE: {len(TRAINING_TASKS)} models")
     print("="*80)
-    for i, (strategy, symbol, target) in enumerate(TRAINING_TASKS, 1):
-        print(f"  {i}. {strategy} on {symbol} (target: {target}%)")
+    print("🚀 PHASE 1: Base Models (Optuna + Early Stopping)")
+    base_count = sum(1 for _, _, _, _, mode in TRAINING_TASKS if mode == 'base')
+    print(f"   {base_count} base models × 3 hours = ~{base_count * 3} hours")
+    print("\n📦 PHASE 2: Transfer Learning (Fine-tuning)")
+    transfer_count = sum(1 for _, _, _, _, mode in TRAINING_TASKS if mode == 'transfer')
+    print(f"   {transfer_count} transfer models × 1 hour = ~{transfer_count} hours")
+    print("\n" + "="*80)
+    for i, (strategy, symbol, target, pretrain, mode) in enumerate(TRAINING_TASKS, 1):
+        icon = "🎯" if mode == 'base' else "📦"
+        pretrain_info = f" (transfer from {Path(pretrain).stem})" if pretrain else ""
+        print(f"  {i}. {icon} {strategy} on {symbol} {pretrain_info}")
     print("="*80)
-    print(f"\n⏱️  Estimated time: {len(TRAINING_TASKS) * 2}-{len(TRAINING_TASKS) * 4} hours")
+    print(f"\n⏱️  Total estimated time: ~{base_count * 3 + transfer_count} hours")
     print("💡 Tip: Run in background with: nohup python train_intelligent_brain.py &\n")
     
     # Load checkpoint to resume training
@@ -621,7 +775,7 @@ def main():
     
     results = {}
     
-    for idx, (strategy, symbol, target) in enumerate(TRAINING_TASKS, 1):
+    for idx, (strategy, symbol, target, pretrained_path, mode) in enumerate(TRAINING_TASKS, 1):
         model_key = f"{strategy}_{symbol}"
         
         # Skip already completed models
@@ -630,14 +784,25 @@ def main():
             results[model_key] = True
             continue
         
+        # Check if pretrained model exists (for transfer learning)
+        if pretrained_path and not Path(pretrained_path).exists():
+            print(f"⚠️  Warning: Pretrained model not found: {pretrained_path}")
+            print(f"   Training {model_key} from scratch instead...")
+            pretrained_path = None
+        
+        icon = "🎯" if mode == 'base' else "📦"
         print(f"\n{'='*80}")
-        print(f"🎯 TASK {idx}/{len(TRAINING_TASKS)}: {strategy} on {symbol}")
+        print(f"{icon} TASK {idx}/{len(TRAINING_TASKS)}: {strategy} on {symbol}")
+        if pretrained_path:
+            print(f"📦 Transfer Learning from: {Path(pretrained_path).stem}")
         print(f"{'='*80}\n")
         
         success = train_intelligent_brain(
             strategy_name=strategy,
             symbol=symbol,
-            target_win_rate=target
+            target_win_rate=target,
+            use_optuna=True,  # Always use Optuna for optimization
+            pretrained_model_path=pretrained_path
         )
         results[model_key] = success
         
