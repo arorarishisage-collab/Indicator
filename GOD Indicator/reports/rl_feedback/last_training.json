@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-11-27T12:33:39.499716",
+  "model_path": "models/rl_gold_ema30.pth",
+  "episodes": 500,
+  "final_avg_reward": -397.6367243614642,
+  "best_reward": -284.01732579613906,
+  "worst_reward": -572.2049696028291,
+  "feedback_trades": 0,
+  "win_rate": 0.0,
+  "avg_win": 0.0,
+  "avg_loss": 0.0
+}

@@ -1,0 +1,70 @@
+2025-11-29 14:51:05,556 - INFO - 
+================================================================================
+2025-11-29 14:51:05,556 - INFO - 🧠 TRAINING INTELLIGENT BRAIN
+2025-11-29 14:51:05,556 - INFO - Strategy: EMA30Strategy | Symbol: GC=F
+2025-11-29 14:51:05,556 - INFO - Target: 90.0% win rate
+2025-11-29 14:51:05,556 - INFO - ================================================================================
+
+2025-11-29 14:51:05,556 - INFO - 📊 Fetching maximum historical data...
+2025-11-29 14:51:06,524 - INFO - ✓ Loaded 11474 candles (1h interval)
+2025-11-29 14:51:07,087 - ERROR - $GC=F: possibly delisted; no price data found  (4h 1926-12-24 04:21:11-05:00 -> 2025-11-29 04:21:06-05:00) (Yahoo error = "4h data not available for startTime=967608000 and endTime=1764408066. The requested range must be within the last 730 days.")
+2025-11-29 14:51:07,410 - INFO - ✓ Loaded 6334 candles (1d interval)
+2025-11-29 14:51:07,410 - INFO - Combining 2 datasets...
+2025-11-29 14:51:07,412 - INFO - ✓ Total data: 17314 candles (2000-08-30 00:00:00-04:00 to 2025-11-28 12:30:00-05:00)
+2025-11-29 14:51:07,412 - INFO - Training: 14716 candles | Validation: 2598 candles
+2025-11-29 14:51:07,412 - INFO - 🎯 Auto-tuning hyperparameters for EMA30Strategy on GC=F...
+2025-11-29 14:51:07,412 - INFO - Testing 48 hyperparameter combinations for 90%+ target...
+2025-11-29 14:51:07,412 - INFO - Expected duration: 720 minutes (~12.0 hours)
+2025-11-29 14:51:07,412 - INFO - 
+[1/48] Testing: LR=5e-05, Episodes=2000
+2025-11-29 18:15:47,746 - INFO -   Result: 36.0% win rate (71/197 trades)
+2025-11-29 18:15:47,750 - INFO -   🌟 New best: 36.0%
+2025-11-29 18:15:47,750 - INFO - 
+[2/48] Testing: LR=5e-05, Episodes=3500
+
+================================================================================
+🧠 INTELLIGENT RL BRAIN TRAINING SYSTEM
+================================================================================
+Goal: Train once to 90%+ historical accuracy
+Expected real-world: 70%+ win rate
+Self-improvement: Continuous learning from live trades
+================================================================================
+
+📋 TRAINING QUEUE: 12 models
+================================================================================
+  1. EMA30Strategy on GC=F (target: 90.0%)
+  2. ICTStrategy on GC=F (target: 90.0%)
+  3. VCPStrategy on GC=F (target: 90.0%)
+  4. EMA30Strategy on BANKNIFTY (target: 90.0%)
+  5. ICTStrategy on BANKNIFTY (target: 90.0%)
+  6. VCPStrategy on BANKNIFTY (target: 90.0%)
+  7. EMA30Strategy on AAPL (target: 90.0%)
+  8. ICTStrategy on AAPL (target: 90.0%)
+  9. VCPStrategy on AAPL (target: 90.0%)
+  10. EMA30Strategy on MSFT (target: 90.0%)
+  11. ICTStrategy on MSFT (target: 90.0%)
+  12. VCPStrategy on MSFT (target: 90.0%)
+================================================================================
+
+⏱️  Estimated time: 24-48 hours
+💡 Tip: Run in background with: nohup python train_intelligent_brain.py &
+
+
+================================================================================
+🎯 TASK 1/12: EMA30Strategy on GC=F
+================================================================================
+
+✅ Using M2 GPU acceleration (MPS)
+✅ Using M2 GPU acceleration (MPS)
+Traceback (most recent call last):
+  File "/Users/rishi/GOD Indicator/train_intelligent_brain.py", line 536, in <module>
+    main()
+  File "/Users/rishi/GOD Indicator/train_intelligent_brain.py", line 496, in main
+    success = train_intelligent_brain(
+  File "/Users/rishi/GOD Indicator/train_intelligent_brain.py", line 354, in train_intelligent_brain
+    best_config, train_win_rate, best_agent = intelligent_hyperparameter_tuning(
+  File "/Users/rishi/GOD Indicator/train_intelligent_brain.py", line 268, in intelligent_hyperparameter_tuning
+    agent = PPOAgent(
+  File "/Users/rishi/GOD Indicator/backend/advanced_rl_trading_system.py", line 501, in __init__
+    torch.set_num_interop_threads(8)
+RuntimeError: Error: cannot set number of interop threads after parallel work has started or set_num_interop_threads called

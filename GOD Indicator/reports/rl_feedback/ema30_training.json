@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-11-27T13:19:55.503368",
+  "strategy": "EMA30Strategy",
+  "symbol": "GC=F",
+  "episodes": 500,
+  "final_avg_reward": -441.4379643749973,
+  "best_reward": -281.4025131016736,
+  "worst_reward": -587.7994614615399,
+  "feedback_trades": 0,
+  "win_rate": 0.0,
+  "avg_win": 0.0,
+  "avg_loss": 0.0,
+  "model_path": "models/rl/ema30.pth"
+}

@@ -1,0 +1,14 @@
+{
+  "main": {
+    "url": "https://discord.com/api/webhooks/1443122326798471198/IMQ3ey3eQQa8XunZo9EIDyP8zeRDbHPRP-L9Fn1EZcOUxFVYMzvv62MGxPtuFyI1-7g8",
+    "api_key": null,
+    "enabled": true,
+    "created_at": "2025-11-26T11:45:00"
+  },
+  "test": {
+    "url": "https://hooks.slack.com/test",
+    "api_key": null,
+    "enabled": true,
+    "created_at": "2025-11-26T12:41:22.747990"
+  }
+}

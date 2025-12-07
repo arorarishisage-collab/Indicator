@@ -1,0 +1,51 @@
+{
+  "name": "gold_ema30",
+  "data_source": {
+    "type": "yfinance",
+    "symbol": "XAUUSD=X",
+    "interval": "1h",
+    "period": "1y",
+    "timezone": "UTC",
+    "fallback": {
+      "type": "yfinance",
+      "symbol": "GC=F",
+      "interval": "1h",
+      "period": "1y",
+      "timezone": "UTC"
+    }
+  },
+  "strategy": {
+    "class": "EMA30Strategy",
+    "params": {
+      "fast_period": 30,
+      "slow_period": 200,
+      "rsi_period": 14,
+      "rsi_threshold": 50,
+      "pullback_bars": 2,
+      "min_volume_factor": 1.0
+    }
+  },
+  "filters": {
+    "session_hours": [
+      "00:00-23:59"
+    ],
+    "require_volume_spike": false,
+    "trend_confirmation_tf": "4h"
+  },
+  "live": {
+    "poll_interval_seconds": 60,
+    "min_poll_seconds": 30,
+    "max_poll_seconds": 600,
+    "max_exposure_percent": 5.0,
+    "risk_per_trade_percent": 1.5,
+    "cooldown_minutes": 30,
+    "session_hours": [
+      "00:00-23:59"
+    ],
+    "max_concurrent_trades": 2,
+    "alert_channels": [
+      "main"
+    ],
+    "confidence_threshold": 1.5
+  }
+}

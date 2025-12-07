@@ -1,0 +1,1 @@
+logged_at,trade_id,symbol,strategy,direction,entry_time,exit_time,holding_minutes,entry_price,exit_price,pnl,pnl_percent,win,signal_strength,risk_percent,timeframe,regime,rl_confidence,rl_reason,stop_loss,take_profit,context_json

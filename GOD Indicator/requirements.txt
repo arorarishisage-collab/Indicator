@@ -1,0 +1,58 @@
+# Core Data & Analysis
+pandas==2.1.4
+numpy==1.24.3
+yfinance==0.2.32
+nsepy==0.8  # NSE/BSE Indian stock data (free)
+nsepython  # Modern NSE API wrapper
+ta-lib==0.4.28  # Optional: Technical Analysis Library
+
+# Deep Learning & Reinforcement Learning
+torch>=2.0.0  # PyTorch for advanced RL trading system
+torchvision>=0.15.0  # Optional: For visualization
+scikit-learn>=1.3.0  # For feature engineering
+
+# Backtesting & Strategy
+vectorbt==0.25.3  # Optional: High-performance backtesting
+backtrader==1.9.78  # Optional: Alternative backtesting framework
+
+# GUI (macOS) - PySide6 for professional UI
+PySide6>=6.0.0  # Enhanced GUI with regime, correlation, MTF, and RL controls
+
+# Web & API
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+requests==2.31.0
+
+# Telegram Integration (optional - for live trading alerts only)
+python-telegram-bot==20.5  # Optional: Only needed for live trading alerts, not for backtesting
+
+# Database (optional)
+# sqlite3  # Built-in - no need to install
+
+# Utilities
+python-dotenv==1.0.0
+pytz==2023.3
+schedule==1.2.0  # For 24/7 scheduler
+
+# Visualization
+plotly==5.18.0
+matplotlib==3.8.2
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Logging & Monitoring
+python-json-logger==2.0.7
+
+# News & Sentiment Analysis (NEW)
+textblob==0.17.1  # Sentiment analysis
+feedparser==6.0.10  # RSS feed parsing for Google News
+
+# Zerodha Kite Connect (NEW - PAPER TRADING ONLY)
+kiteconnect==4.2.0  # Official Zerodha Kite Connect SDK
+
+# Finnhub (NEW - PRODUCTION DATA SOURCE)
+finnhub-python==2.4.19  # Official Finnhub SDK
+websocket-client==1.6.4  # For WebSocket streaming

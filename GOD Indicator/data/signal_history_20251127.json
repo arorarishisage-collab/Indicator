@@ -1,0 +1,90 @@
+{
+  "gold_ema30_eur": {
+    "timestamp": "2025-11-27T11:38:49.134435",
+    "signals": [
+      {
+        "timestamp": "2025-11-27T11:38:49.134430",
+        "profile": "gold_ema30_eur",
+        "symbol": "XAUEUR=X",
+        "status": "blocked",
+        "blocked_reason": "Unfavorable regime: CHOPPY",
+        "regime": "CHOPPY",
+        "regime_metrics": {
+          "adx": 15.51,
+          "plus_di": 3.47,
+          "minus_di": 4.04,
+          "atr_percent": 1.1946,
+          "atr_percentile": 77.0,
+          "efficiency_ratio": 0.119,
+          "trend_score": 4,
+          "price": 4197.3,
+          "regime": "CHOPPY"
+        }
+      }
+    ]
+  },
+  "gold_ema30_gbp": {
+    "timestamp": "2025-11-27T11:38:54.633911",
+    "signals": [
+      {
+        "timestamp": "2025-11-27T11:38:54.633907",
+        "profile": "gold_ema30_gbp",
+        "symbol": "XAUGBP=X",
+        "status": "blocked",
+        "blocked_reason": "Unfavorable regime: CHOPPY",
+        "regime": "CHOPPY",
+        "regime_metrics": {
+          "adx": 15.51,
+          "plus_di": 3.47,
+          "minus_di": 4.04,
+          "atr_percent": 1.1946,
+          "atr_percentile": 77.0,
+          "efficiency_ratio": 0.119,
+          "trend_score": 4,
+          "price": 4197.3,
+          "regime": "CHOPPY"
+        }
+      }
+    ]
+  },
+  "gold_ema30": {
+    "timestamp": "2025-11-27T11:39:00.134112",
+    "signals": [
+      {
+        "timestamp": "2025-11-27T11:39:00.134108",
+        "profile": "gold_ema30",
+        "symbol": "XAUUSD=X",
+        "status": "blocked",
+        "blocked_reason": "Unfavorable regime: CHOPPY",
+        "regime": "CHOPPY",
+        "regime_metrics": {
+          "adx": 15.51,
+          "plus_di": 3.47,
+          "minus_di": 4.04,
+          "atr_percent": 1.1946,
+          "atr_percentile": 77.0,
+          "efficiency_ratio": 0.119,
+          "trend_score": 4,
+          "price": 4197.3,
+          "regime": "CHOPPY"
+        }
+      }
+    ]
+  },
+  "nifty50_ema": {
+    "timestamp": "2025-11-27T11:33:33.993815",
+    "signals": []
+  },
+  "banknifty_ema": {
+    "timestamp": "2025-11-27T11:33:35.413305",
+    "signals": []
+  },
+  "banknifty_ict": {
+    "timestamp": "2025-11-27T11:33:37.348031",
+    "signals": []
+  },
+  "nifty50_ict": {
+    "timestamp": "2025-11-27T11:33:39.306076",
+    "signals": []
+  }
+}

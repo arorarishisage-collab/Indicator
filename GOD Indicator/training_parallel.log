@@ -1,0 +1,25 @@
+2025-11-30 13:10:20,003 - INFO - 
+================================================================================
+2025-11-30 13:10:20,003 - INFO - 🧠 TRAINING INTELLIGENT BRAIN
+2025-11-30 13:10:20,003 - INFO - Strategy: EMA30Strategy | Symbol: GC=F
+2025-11-30 13:10:20,003 - INFO - Target: 90.0% win rate
+2025-11-30 13:10:20,003 - INFO - ================================================================================
+
+2025-11-30 13:10:20,003 - INFO - 📊 Fetching maximum historical data...
+2025-11-30 13:10:20,905 - INFO - ✓ Loaded 11453 candles (1h interval)
+2025-11-30 13:10:21,385 - ERROR - $GC=F: possibly delisted; no price data found  (4h 1926-12-25 02:40:25-05:00 -> 2025-11-30 02:40:20-05:00) (Yahoo error = "4h data not available for startTime=967608000 and endTime=1764488420. The requested range must be within the last 730 days.")
+2025-11-30 13:10:21,671 - INFO - ✓ Loaded 6334 candles (1d interval)
+2025-11-30 13:10:21,672 - INFO - Combining 2 datasets...
+2025-11-30 13:10:21,675 - INFO - ✓ Total data: 17294 candles (2000-08-30 00:00:00-04:00 to 2025-11-28 12:30:00-05:00)
+2025-11-30 13:10:21,675 - INFO - Training: 14699 candles | Validation: 2595 candles
+2025-11-30 13:10:21,675 - INFO - 🎯 Auto-tuning hyperparameters for EMA30Strategy on GC=F...
+2025-11-30 13:10:21,675 - INFO - Testing 18 hyperparameter combinations for 90%+ target...
+2025-11-30 13:10:21,675 - INFO - Expected duration: 270 minutes (~4.5 hours)
+2025-11-30 13:10:21,675 - INFO - 
+[1/18] Testing: LR=0.0001, Episodes=1000
+2025-11-30 13:38:44,303 - INFO -   Result: 0.0% win rate (0/0 trades)
+2025-11-30 13:38:44,304 - INFO - 
+[2/18] Testing: LR=0.0001, Episodes=2000
+2025-11-30 14:25:51,511 - INFO -   Result: 0.0% win rate (0/0 trades)
+2025-11-30 14:25:51,512 - INFO - 
+[3/18] Testing: LR=0.0001, Episodes=1000

@@ -1,0 +1,46 @@
+2025-11-28 15:14:46,817 - INFO - 
+================================================================================
+2025-11-28 15:14:46,817 - INFO - 🧠 TRAINING INTELLIGENT BRAIN
+2025-11-28 15:14:46,817 - INFO - Strategy: EMA30Strategy | Symbol: GC=F
+2025-11-28 15:14:46,817 - INFO - Target: 90.0% win rate
+2025-11-28 15:14:46,817 - INFO - ================================================================================
+
+2025-11-28 15:14:46,817 - INFO - 📊 Fetching maximum historical data...
+2025-11-28 15:14:47,646 - INFO - ✓ Loaded 11493 candles (1h interval)
+2025-11-28 15:14:48,194 - ERROR - $GC=F: possibly delisted; no price data found  (4h 1926-12-23 04:44:52-05:00 -> 2025-11-28 04:44:47-05:00) (Yahoo error = "4h data not available for startTime=967608000 and endTime=1764323087. The requested range must be within the last 730 days.")
+2025-11-28 15:14:48,410 - INFO - ✓ Loaded 6334 candles (1d interval)
+2025-11-28 15:14:48,410 - INFO - Combining 2 datasets...
+2025-11-28 15:14:48,412 - INFO - ✓ Total data: 17332 candles (2000-08-30 00:00:00-04:00 to 2025-11-27 00:00:00-05:00)
+2025-11-28 15:14:48,412 - INFO - Training: 14732 candles | Validation: 2600 candles
+2025-11-28 15:14:48,412 - INFO - 🎯 Auto-tuning hyperparameters for EMA30Strategy on GC=F...
+2025-11-28 15:14:48,412 - INFO - Testing 48 hyperparameter combinations for 90%+ target...
+2025-11-28 15:14:48,412 - INFO - Expected duration: 720 minutes (~12.0 hours)
+2025-11-28 15:14:48,412 - INFO - 
+[1/48] Testing: LR=5e-05, Episodes=2000
+2025-11-28 15:47:54,632 - INFO -   Result: 41.5% win rate (171/412 trades)
+2025-11-28 15:47:54,633 - INFO -   🌟 New best: 41.5%
+2025-11-28 15:47:54,634 - INFO - 
+[2/48] Testing: LR=5e-05, Episodes=3500
+2025-11-28 16:54:39,462 - INFO -   Result: 45.8% win rate (264/576 trades)
+2025-11-28 16:54:39,465 - INFO -   🌟 New best: 45.8%
+2025-11-28 16:54:39,465 - INFO - 
+[3/48] Testing: LR=5e-05, Episodes=5000
+2025-11-28 22:52:21,542 - INFO -   Result: 0.0% win rate (0/1 trades)
+2025-11-28 22:52:21,544 - INFO - 
+[4/48] Testing: LR=5e-05, Episodes=2000
+2025-11-28 23:25:48,483 - INFO -   Result: 41.5% win rate (134/323 trades)
+2025-11-28 23:25:48,485 - INFO - 
+[5/48] Testing: LR=5e-05, Episodes=3500
+2025-11-29 00:27:45,593 - INFO -   Result: 33.2% win rate (63/190 trades)
+2025-11-29 00:27:45,595 - INFO - 
+[6/48] Testing: LR=5e-05, Episodes=5000
+2025-11-29 08:21:06,210 - INFO -   Result: 43.2% win rate (319/739 trades)
+2025-11-29 08:21:06,212 - INFO - 
+[7/48] Testing: LR=5e-05, Episodes=2000
+2025-11-29 12:53:27,607 - INFO -   Result: 66.7% win rate (4/6 trades)
+2025-11-29 12:53:27,609 - INFO -   🌟 New best: 66.7%
+2025-11-29 12:53:27,609 - INFO - 
+[8/48] Testing: LR=5e-05, Episodes=3500
+2025-11-29 13:50:11,542 - INFO -   Result: 39.6% win rate (101/255 trades)
+2025-11-29 13:50:11,543 - INFO - 
+[9/48] Testing: LR=5e-05, Episodes=5000

@@ -1,0 +1,47 @@
+{
+  "name": "banknifty_ict",
+  "data_source": {
+    "type": "yfinance",
+    "symbol": "^NSEBANK",
+    "interval": "5m",
+    "period": "1mo",
+    "timezone": "Asia/Kolkata"
+  },
+  "strategy": {
+    "class": "ICTStrategy",
+    "params": {
+      "lookback_period": 100,
+      "fvg_threshold": 0.001,
+      "ob_threshold": 2
+    }
+  },
+  "filters": {
+    "session_hours": [
+      "09:15-15:30"
+    ],
+    "min_zone_strength": 2,
+    "allow_liquidity_void": true,
+    "confluence_weights": {
+      "order_block": 2.5,
+      "fvg": 1.5,
+      "bos": 3.0,
+      "liquidity_void": 1.0
+    }
+  },
+  "live": {
+    "poll_interval_seconds": 300,
+    "min_poll_seconds": 180,
+    "max_poll_seconds": 600,
+    "max_exposure_percent": 5.0,
+    "risk_per_trade_percent": 1.0,
+    "cooldown_minutes": 45,
+    "session_hours": [
+      "09:15-15:30"
+    ],
+    "max_concurrent_trades": 2,
+    "alert_channels": [
+      "main"
+    ],
+    "confidence_threshold": 3.5
+  }
+}

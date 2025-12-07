@@ -1,0 +1,2 @@
+entry_index,exit_index,entry_time,exit_time,entry_price,exit_price,direction,pnl,pnl_percent,bars_held
+950,999,950,999,2214.794335751344,2220.844288809779,-1,-10.485591682995889,-0.47343410237857453,49

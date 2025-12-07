@@ -1,0 +1,247 @@
+// @version=5
+// Gold (XAU/USD) ICT Trading Indicator
+// Supply/Demand Zones, Order Blocks, Fair Value Gaps, Support/Resistance
+// Strategy: Multi-timeframe Analysis (1H/4H), 30 EMA, Price Action
+
+indicator("Gold ICT Strategy [1H/4H]", shorttitle="Gold ICT", overlay=true, timeframe="")
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+swingLookback = input.int(20, title="Swing High/Low Lookback", minval=10, maxval=50)
+atrMultiplier = input.float(1.5, title="ATR Multiplier for Zones", minval=0.5, maxval=3.0)
+showDemandZones = input.bool(true, title="Show Demand Zones", group="Visual")
+showSupplyZones = input.bool(true, title="Show Supply Zones", group="Visual")
+showSR = input.bool(true, title="Show Support/Resistance", group="Visual")
+showOB = input.bool(true, title="Show Order Blocks", group="Visual")
+showFVG = input.bool(true, title="Show Fair Value Gaps", group="Visual")
+showSignals = input.bool(true, title="Show Buy/Sell Signals", group="Visual")
+
+emaFastLen = input.int(30, title="Fast EMA Period", minval=5, maxval=100)
+emaSlowLen = input.int(200, title="Slow EMA Period", minval=50, maxval=500)
+minRiskReward = input.float(1.5, title="Minimum Risk/Reward Ratio", minval=1.0, maxval=5.0)
+
+// ============================================================================
+// ZONE DETECTION
+// ============================================================================
+
+// Detect Swing Highs and Lows
+f_isSwingHigh(index) =>
+    high = high[index]
+    condition = true
+    for i = 1 to swingLookback
+        if high < high[index - i] or high < high[index + i]
+            condition := false
+            break
+    condition
+
+f_isSwingLow(index) =>
+    low = low[index]
+    condition = true
+    for i = 1 to swingLookback
+        if low > low[index - i] or low > low[index + i]
+            condition := false
+            break
+    condition
+
+// ATR for zone sizing
+atr = ta.atr(14)
+zoneWidth = atr * atrMultiplier
+
+// Supply zones (after downswings)
+var swingHighs = array.new<float>()
+var swingHighIndices = array.new<int>()
+
+if f_isSwingHigh(swingLookback)
+    array.push(swingHighs, high[swingLookback])
+    array.push(swingHighIndices, bar_index - swingLookback)
+    if array.size(swingHighs) > 20
+        array.shift(swingHighs)
+        array.shift(swingHighIndices)
+
+// Demand zones (after upswings)
+var swingLows = array.new<float>()
+var swingLowIndices = array.new<int>()
+
+if f_isSwingLow(swingLookback)
+    array.push(swingLows, low[swingLookback])
+    array.push(swingLowIndices, bar_index - swingLookback)
+    if array.size(swingLows) > 20
+        array.shift(swingLows)
+        array.shift(swingLowIndices)
+
+// ============================================================================
+// DRAW SUPPLY/DEMAND ZONES
+// ============================================================================
+
+if showDemandZones and array.size(swingLows) > 0
+    lastLow = array.get(swingLows, array.size(swingLows) - 1)
+    lastLowIdx = array.get(swingLowIndices, array.size(swingLows) - 1)
+    
+    box.new(
+        left=lastLowIdx,
+        top=lastLow + zoneWidth * 0.5,
+        right=bar_index,
+        bottom=lastLow - zoneWidth * 0.5,
+        border_color=color.new(color.green, 50),
+        bgcolor=color.new(color.green, 90),
+        xloc=xloc.bar_index
+    )
+
+if showSupplyZones and array.size(swingHighs) > 0
+    lastHigh = array.get(swingHighs, array.size(swingHighs) - 1)
+    lastHighIdx = array.get(swingHighIndices, array.size(swingHighs) - 1)
+    
+    box.new(
+        left=lastHighIdx,
+        top=lastHigh + zoneWidth * 0.5,
+        right=bar_index,
+        bottom=lastHigh - zoneWidth * 0.5,
+        border_color=color.new(color.red, 50),
+        bgcolor=color.new(color.red, 90),
+        xloc=xloc.bar_index
+    )
+
+// ============================================================================
+// SUPPORT / RESISTANCE
+// ============================================================================
+
+// Recent support/resistance from swings
+recentSupport = array.size(swingLows) > 0 ? array.get(swingLows, array.size(swingLows) - 1) : na
+recentResistance = array.size(swingHighs) > 0 ? array.get(swingHighs, array.size(swingHighs) - 1) : na
+
+if showSR and not na(recentSupport)
+    line.new(bar_index - 100, recentSupport, bar_index, recentSupport, color=color.blue, style=line.style_dashed, width=2)
+
+if showSR and not na(recentResistance)
+    line.new(bar_index - 100, recentResistance, bar_index, recentResistance, color=color.orange, style=line.style_dashed, width=2)
+
+// ============================================================================
+// FAIR VALUE GAPS (FVG)
+// ============================================================================
+
+f_bullishFVG() =>
+    high1 = high[2]
+    low1 = low[2]
+    high2 = high[1]
+    low2 = low[1]
+    high3 = high[0]
+    low3 = low[0]
+    
+    high1 < low3 ? true : false
+
+f_bearishFVG() =>
+    high1 = high[2]
+    low1 = low[2]
+    high2 = high[1]
+    low2 = low[1]
+    high3 = high[0]
+    low3 = low[0]
+    
+    low1 > high3 ? true : false
+
+bullishFVG = f_bullishFVG()
+bearishFVG = f_bearishFVG()
+
+if showFVG and bullishFVG
+    box.new(
+        left=bar_index - 2,
+        top=low[0],
+        right=bar_index,
+        bottom=high[2],
+        border_color=color.new(color.lime, 40),
+        bgcolor=color.new(color.lime, 85),
+        xloc=xloc.bar_index,
+        text="BFVG"
+    )
+
+if showFVG and bearishFVG
+    box.new(
+        left=bar_index - 2,
+        top=low[2],
+        right=bar_index,
+        bottom=high[0],
+        border_color=color.new(color.maroon, 40),
+        bgcolor=color.new(color.maroon, 85),
+        xloc=xloc.bar_index,
+        text="BFVG"
+    )
+
+// ============================================================================
+// MOVING AVERAGES
+// ============================================================================
+
+ema30 = ta.ema(close, emaFastLen)
+ema200 = ta.ema(close, emaSlowLen)
+
+plot(ema30, color=color.blue, linewidth=2, title="EMA 30")
+plot(ema200, color=color.orange, linewidth=2, title="EMA 200")
+
+// ============================================================================
+// SIGNAL GENERATION
+// ============================================================================
+
+// BUY Signal Conditions
+bullishTrend = close > ema200
+priceInDemandZone = recentSupport != na and close > recentSupport and close < recentSupport + zoneWidth
+touchingSupport = low <= recentSupport and high >= recentSupport
+
+buySignal = bullishTrend and (priceInDemandZone or touchingSupport) and bullishFVG
+
+// SELL Signal Conditions
+bearishTrend = close < ema200
+priceInSupplyZone = recentResistance != na and close < recentResistance and close > recentResistance - zoneWidth
+touchingResistance = low <= recentResistance and high >= recentResistance
+
+sellSignal = bearishTrend and (priceInSupplyZone or touchingResistance) and bearishFVG
+
+// ============================================================================
+// PLOT SIGNALS
+// ============================================================================
+
+if showSignals and buySignal
+    plotshape(true, style=shape.labelup, location=location.belowbar, color=color.new(color.green, 0), size=size.large, text="BUY", textcolor=color.white)
+    alert("BUY SIGNAL: XAUUSD - Enter long position", alert.freq_once_per_bar_close)
+
+if showSignals and sellSignal
+    plotshape(true, style=shape.labeldown, location=location.abovebar, color=color.new(color.red, 0), size=size.large, text="SELL", textcolor=color.white)
+    alert("SELL SIGNAL: XAUUSD - Enter short position", alert.freq_once_per_bar_close)
+
+// ============================================================================
+// WEBHOOK ALERTS (For Pine Script v5)
+// ============================================================================
+
+// Send to webhook server
+if buySignal
+    webhook_url = request.security(syminfo.tickerid, "", na)
+    // Note: Implement via TradingView alerting to custom webhook URL
+
+if sellSignal
+    webhook_url = request.security(syminfo.tickerid, "", na)
+    // Note: Implement via TradingView alerting to custom webhook URL
+
+// ============================================================================
+// TABLE INFO
+// ============================================================================
+
+var table infoTable = na
+
+if barstate.islast
+    infoTable := table.new(position=position.top_right, columns=2, rows=6, bgcolor=color.new(color.gray, 80), border_color=color.white, border_width=1)
+    
+    table.cell(infoTable, 0, 0, text="INDICATOR INFO", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 50))
+    table.cell(infoTable, 0, 1, text="VALUE", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 50))
+    
+    table.cell(infoTable, 0, 2, text="Price", text_color=color.white)
+    table.cell(infoTable, 1, 2, text=str.tostring(close, "#.##"), text_color=color.white)
+    
+    table.cell(infoTable, 0, 3, text="EMA 30", text_color=color.blue)
+    table.cell(infoTable, 1, 3, text=str.tostring(ema30, "#.##"), text_color=color.blue)
+    
+    table.cell(infoTable, 0, 4, text="EMA 200", text_color=color.orange)
+    table.cell(infoTable, 1, 4, text=str.tostring(ema200, "#.##"), text_color=color.orange)
+    
+    table.cell(infoTable, 0, 5, text="Trend", text_color=color.white)
+    trend_text = bullishTrend ? "BULLISH" : "BEARISH"
+    table.cell(infoTable, 1, 5, text=trend_text, text_color=bullishTrend ? color.green : color.red)

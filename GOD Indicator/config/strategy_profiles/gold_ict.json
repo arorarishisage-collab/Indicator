@@ -1,0 +1,56 @@
+{
+  "name": "gold_ict",
+  "data_source": {
+    "type": "yfinance",
+    "symbol": "XAUUSD=X",
+    "interval": "1h",
+    "period": "18mo",
+    "timezone": "UTC",
+    "fallback": {
+      "type": "yfinance",
+      "symbol": "GC=F",
+      "interval": "1h",
+      "period": "18mo",
+      "timezone": "UTC"
+    }
+  },
+  "strategy": {
+    "class": "ICTStrategy",
+    "params": {
+      "lookback_period": 200,
+      "fvg_threshold": 0.0005,
+      "ob_threshold": 2
+    }
+  },
+  "filters": {
+    "session_hours": [
+      "07:00-17:00",
+      "19:00-23:00"
+    ],
+    "min_zone_strength": 2,
+    "allow_liquidity_void": true,
+    "confluence_weights": {
+      "order_block": 2,
+      "fvg": 1.5,
+      "bos": 2.5,
+      "liquidity_void": 1.0
+    }
+  },
+  "live": {
+    "poll_interval_seconds": 120,
+    "min_poll_seconds": 60,
+    "max_poll_seconds": 900,
+    "max_exposure_percent": 5.0,
+    "risk_per_trade_percent": 1.5,
+    "cooldown_minutes": 30,
+    "session_hours": [
+      "07:00-17:00",
+      "19:00-23:00"
+    ],
+    "max_concurrent_trades": 2,
+    "alert_channels": [
+      "main"
+    ],
+    "confidence_threshold": 3.0
+  }
+}
